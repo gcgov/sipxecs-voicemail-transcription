@@ -1,4 +1,4 @@
-1. Set Environment variable 
+1. Set Environment variable
         GOOGLE_APPLICATION_CREDENTIALS
         path and file name to ./credentials/SipXecsVoicemailToText.json
 2. PYTHON >=3
@@ -6,7 +6,7 @@
         pip install --upgrade google-api-python-client
         pip install --upgrade google-cloud-speech
 4. Modify /etc/mail/sendmail.mc
-    4a. Append: 
+    4a. Append:
         dnl #Mail filter
         INPUT_MAIL_FILTER(`vrfilter', `S=inet:5000@localhost, T=C:5m;R:5m')dnl
         define(`confINPUT_MAIL_FILTERS', `vrfilter')dnl
@@ -14,6 +14,7 @@
     4b. Run command: m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
     4c. Run command: service sendmail restart
 5. Copy build to /usr/voicemailtranscription/
+6.
 
 ----original doc:-----
 
