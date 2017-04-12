@@ -4,7 +4,7 @@ This project extends sipxcom/sipexcs voicemail emails to include a voice to text
 - Python3
 - Credentials for the Google CLOUD SPEECH API (https://cloud.google.com/speech/)
 
-##Installing
+## Installing
  1. Install Python3
  
  2. Create the following directories:
