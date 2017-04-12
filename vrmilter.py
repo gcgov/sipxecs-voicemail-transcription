@@ -62,7 +62,7 @@ def decode_speech(wav_file):
         alternatives = speech_client.speech_api.sync_recognize(audio_sample)
         for alternative in alternatives:
             print(alternative.transcript)
-            result = format(alternative.transcript)
+            result = result + format(alternative.transcript)
         return result
     finally:
         result = 'No transcription available for this message'
@@ -317,12 +317,12 @@ class VRMilter(lm.ForkMixin, lm.MilterProtocol):
                         self.log("This is the WAV part!")
                     elif ct.startswith("text/html"):
                         if vr_text is not None:
-                            vr_html = "<p>Transcript: </p><p>" + vr_text + "</p>"
+                            vr_html = '<p style="font-family:Helvetica,Arial,sans-serif;color:#000000;font-size:16px;margin:0;">Transcription: ' + vr_text + '</p>'
                             new_piece = new_piece.replace(
                                 "</body>", vr_html + "</body>")
                     elif ct.startswith("text/plain"):
                         if vr_text is not None:
-                            new_piece = new_piece + "\r\n\r\nTranscript: " + vr_text
+                            new_piece = new_piece + "\r\n\r\nTranscription: " + vr_text
                     new_pieces.append(new_piece)
                 newbody = '\r\n'.join(new_pieces)
 
