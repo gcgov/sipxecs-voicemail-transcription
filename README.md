@@ -7,13 +7,13 @@ This project extends sipxcom/sipexcs voicemail emails to include a voice to text
 ## Installing
  1. Install Python3
  
- 2. Create the following directories:
+ 2. Create the directories:
 	 `/usr/voicemailtranscription`
 	 `/usr/voicemailtranscription/voicemail`
 	 `/usr/voicemailtranscription/credentials`
 	 
  3. Sign up for Google Cloud Speech API
- 	 1. Generate the app credentials JSON file. Save the json credentials as `/credentials/SipxecsVoicemailtoText.json`
+ 	 1. Generate the app credentials JSON file. Save the json credentials as `./credentials/SipxecsVoicemailtoText.json`
 	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipXecsVoicemailToText.json`
 
  4. Modify SendMail configuration
