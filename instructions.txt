@@ -1,0 +1,93 @@
+1. Set Environment variable 
+        GOOGLE_APPLICATION_CREDENTIALS
+        path and file name to ./credentials/SipXecsVoicemailToText.json
+2. PYTHON >=3
+    2a. Install Google Python packages. From command line run:
+        pip install --upgrade google-api-python-client
+        pip install --upgrade google-cloud-speech
+4. Modify /etc/mail/sendmail.mc
+    4a. Append: 
+        dnl #Mail filter
+        INPUT_MAIL_FILTER(`vrfilter', `S=inet:5000@localhost, T=C:5m;R:5m')dnl
+        define(`confINPUT_MAIL_FILTERS', `vrfilter')dnl
+        dnl#
+    4b. Run command: m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
+    4c. Run command: service sendmail restart
+5. Copy build to /usr/voicemailtranscription/
+
+----original doc:-----
+
+Tools
+
+A number of software tools will be used to construct this system.  The
+Python scripting language (http://www.python.org/) is used to write
+the milter.  The ffmpeg command line utility (http://www.ffmpeg.org/)
+is used to convert the sound file to the correct input format
+
+
+Configuring Sendmail
+
+Sendmail is the software that delivers mail from the server where
+SipXecs runs to the destination mail host. The file
+``/etc/mail/sendmail.mc`` should be configured like so:
+
+   dnl #Mail filter
+   INPUT_MAIL_FILTER(`vrfilter', `S=inet:5000@localhost, T=C:5m;R:5m')dnl
+   define(`confINPUT_MAIL_FILTERS', `vrfilter')dnl
+   dnl#
+
+Details concerning milter configuration are available at
+https://www.milter.org/developers/installation. We create an entry for
+a voice recognition filter called 'vrfilter' that listens on TCP port
+5000 of the local machine.  The milter runs in its own process.
+Various timeouts are configured (so the milter won't delay delivery
+indefinitely).
+
+Typically, you will need to run *make* in the ``/etc/mail`` folder in
+order to convert the sendmail macros into a ``sendmail.cf``
+configuration file, and then restart sendmail.  Now, sendmail will
+attempt to connect to the milter listening on port 5000 and pass
+outbound mail to it.
+
+
+Installing libmilter
+
+Install the Python libmilter module from PyPI.
+I like to use Python virtual environments when building
+systems. If you want to use virtualenv, you will need to ensure that
+PocketSphinx and Sphinxbase are available in the milter Python
+environment.  Make sure your virtual environment is active in the
+shell where you build those libraries (see Building PocketSphinx
+below).
+
+Libmilter is written in pure Python, so installation is relatively
+straightforward:
+
+   (pyenv)[waldbiec@blackbox0 DEV ~]$ pip install python-libmilter
+
+
+
+Building FFMPEG
+
+If your distribution doesn't provide a package for the ffmpeg
+command line tool, you can get the source and build it according to
+the instructions.  I am using this tool to convert the original WAV
+file to stereo at a sample rate 16000 Hz.  It may be possible to
+configure SipXecs to produce the sound files in this format, in which
+case conversion by the milter would be unnecessary.
+
+
+Configuring the Recognizer
+The recognizer code: vrmilter.py
+
+
+Running the Milter
+
+The milter is run as any standard Python script.  I have chosen to run
+it using the *ForkFactory* mixin which causes a new subprocess to be
+generated for each milter request.  I also decided that the milter
+will listen on the localhost TCP port 5000 to match the sendmail
+configuration we performed earlier.  In a production environment, you
+would probably want to integrate the script into your system startup
+scripts (e.g. ``/etc/init.d/``), but running the script from a shell
+works fine for testing and debugging purposes.
