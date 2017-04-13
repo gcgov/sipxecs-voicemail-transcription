@@ -17,8 +17,10 @@ import time
 import wave
 import string
 import random
-from textwrap import dedent
+import signal
+import traceback
 import libmilter as lm
+from textwrap import dedent
 
 # Imports the Google Cloud client library
 from google.cloud import speech
@@ -79,8 +81,6 @@ def fn_run_milter():
     """When the script runs, this is the primary entry point.
         It generates a listener for sendmail
     """
-    import signal
-    import traceback
     # We can set our milter opts here
     opts = lm.SMFIF_CHGFROM | lm.SMFIF_ADDRCPT | lm.SMFIF_CHGBODY | lm.SMFIF_CHGFROM
 
@@ -99,7 +99,6 @@ def fn_run_milter():
     except Exception as e:
         f.close()
         print('EXCEPTION OCCURED: ' + str(e))
-        traceback.print_tb(sys.exc_traceback)
         sys.exit(3)
 
 
@@ -335,7 +334,15 @@ class VRMilter(lm.ForkMixin, lm.MilterProtocol):
         self.log('Close called. QID: %s' % self._qid)
 
 
-
 # RUN ACTION run and enable the milter
+def set_exit_handler(func):
+    signal.signal(signal.SIGTERM, func)
+
+
+def on_exit(sig, func=None):
+    print("exit handler triggered")
+    sys.exit(1)
+
+
 if __name__ == '__main__':
     fn_run_milter()
