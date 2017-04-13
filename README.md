@@ -22,7 +22,7 @@ This project extends sipxcom voicemail email notifications to include a voice to
 	 
  3. Sign up for Google Cloud Speech API
  	 1. Generate the app credentials JSON file. Save the json credentials as `./credentials/SipxecsVoicemailtoText.json`
-	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipXecsVoicemailToText.json`
+	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json` 
 
  4. Modify SendMail configuration
 	 1. Append the following lines to */etc/mail/sendmail.mc*
