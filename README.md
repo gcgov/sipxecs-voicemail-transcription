@@ -4,8 +4,8 @@ This project extends sipxcom/sipexcs voicemail emails to include a voice to text
 - Python3
 - Credentials for the Google CLOUD SPEECH API (https://cloud.google.com/speech/)
 
-## Installing
- 1. Install Python3
+## Manual Install for CentOS 6
+ 1. Install Python3 and pip
  
  2. Create the directories:
 	 `/usr/voicemailtranscription`
@@ -28,3 +28,7 @@ This project extends sipxcom/sipexcs voicemail emails to include a voice to text
 	 3. Run command: service sendmail restart
 
  6. Copy `vrmilter.py` and `libmilter.py` into `/usr/voicemailtranscription/`
+ 7. Copy `voicemailtranscriptionservice.sh` to have the file name and path `/etc/init.d/voicemailtranscription`
+ 	1. Run command `chmod 777 /etc/init.d/voicemailtranscription`
+	2. Run command `chkconfig voicemailtranscription on` to make the transcription service start on bootup
+	3. Run command `sh /etc/init.d/voicemailtranscription start` to make the transcription service right now
