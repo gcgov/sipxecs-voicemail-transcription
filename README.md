@@ -1,6 +1,7 @@
 # sipxecs-voicemail-translation
 
-This project extends sipxcom/sipexcs voicemail emails to include a voice to text transcription. Requirements:
+This project extends sipxcom voicemail email notifications to include a voice to text transcription. Requirements:
+- sipxcom
 - Python3
 - Credentials for the Google CLOUD SPEECH API (https://cloud.google.com/speech/)
 
