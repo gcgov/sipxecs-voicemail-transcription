@@ -5,7 +5,7 @@ workdir=/usr/voicemailtranscription
 
 start() {
     cd $workdir
-    /usr/bin/env python3 /usr/voicemailtranscription/vrmilter.py &
+    /usr/bin/env python3 /usr/voicemailtranscription/vrmilter.py > /var/log/voicemailtranscription.log 2>&1 &
     echo "Server started."
 }
 
