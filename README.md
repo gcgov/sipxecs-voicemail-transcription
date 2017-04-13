@@ -5,6 +5,10 @@ This project extends sipxcom voicemail email notifications to include a voice to
 - Python3
 - Credentials for the Google CLOUD SPEECH API (https://cloud.google.com/speech/)
 
+## Installing with install.sh
+ 1. Download entire package into a local directory
+ 2. cd into that directory and run install.sh
+
 ## Manual Install for CentOS 6
  1. Install Python3 and pip
  
