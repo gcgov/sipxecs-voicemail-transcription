@@ -1,4 +1,4 @@
-# sipxecs-voicemail-translation
+# sipxecs-voicemail-transcription
 
 This project extends sipxcom voicemail email notifications to include a voice to text transcription. Requirements:
 - sipxcom
