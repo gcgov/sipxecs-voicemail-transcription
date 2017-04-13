@@ -40,3 +40,6 @@ This project extends sipxcom voicemail email notifications to include a voice to
  	1. Run command `chmod 777 /etc/init.d/voicemailtranscription`
 	2. Run command `chkconfig voicemailtranscription on` to make the transcription service start on bootup
 	3. Run command `sh /etc/init.d/voicemailtranscription start` to make the transcription service right now
+
+## Logging
+All output of the voicemailtranscription service is logged to `/var/log/voicemailtranscription.log`. Once you have the milter running as a service, to verify the service is working or to watch for any errors, `tail -f /var/log/voicemailtranscription.log`
