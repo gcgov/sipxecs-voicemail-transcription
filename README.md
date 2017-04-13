@@ -10,19 +10,19 @@ This project extends sipxcom voicemail email notifications to include a voice to
  2. cd into that directory and run install.sh
  3. Sign up for Google Cloud Speech API
  	 1. Generate the app credentials JSON file. Save the json credentials as `./credentials/SipxecsVoicemailtoText.json`
-	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json` 
+	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
 
 ## Manual Install for CentOS 6
  1. Install Python3 and pip
- 
+
  2. Create the directories:
 	 `/usr/voicemailtranscription`
 	 `/usr/voicemailtranscription/voicemail`
 	 `/usr/voicemailtranscription/credentials`
-	 
+
  3. Sign up for Google Cloud Speech API
  	 1. Generate the app credentials JSON file. Save the json credentials as `./credentials/SipxecsVoicemailtoText.json`
-	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json` 
+	 2. Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
 
  4. Modify SendMail configuration
 	 1. Append the following lines to */etc/mail/sendmail.mc*
@@ -42,7 +42,7 @@ This project extends sipxcom voicemail email notifications to include a voice to
 	3. Run command `sh /etc/init.d/voicemailtranscription start` to make the transcription service right now
 
 ## Testing without running as service
-Follow instructions 1-6 of the manual install. Run command: `python3 vrmilter.py`. All output is dumpped to the terminal. If results are satisfactory, follow step 7 to run the milter as a service so that it is always transcribing voicemails. 
+Follow instructions 1-6 of the manual install. Run command: `python3 vrmilter.py`. All output is dumpped to the terminal. If results are satisfactory, follow step 7 to run the milter as a service so that it is always transcribing voicemails.
 
 ## Logging
 All output of the voicemailtranscription service is logged to `/var/log/voicemailtranscription.log`. Once you have the milter running as a service, to verify the service is working or to watch for any errors, `tail -f /var/log/voicemailtranscription.log`
