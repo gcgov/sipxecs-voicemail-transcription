@@ -59,6 +59,7 @@ def decode_speech(wav_file):
                 content,
                 source_uri=None,
                 encoding='LINEAR16',
+				languageCode='en-US',
                 sample_rate=samplerate)
         # Detects speech in the audio file
         alternatives = speech_client.speech_api.sync_recognize(audio_sample)
