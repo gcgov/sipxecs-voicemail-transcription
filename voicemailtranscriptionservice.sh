@@ -1,6 +1,5 @@
 #!/bin/sh
-# chkconfig: 123456 90 10
-#
+# chkconfig: 123456 98 02
 workdir=/usr/voicemailtranscription
 
 start() {

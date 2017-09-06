@@ -23,6 +23,8 @@ cp EmailFormats.properties /etc/sipxpbx/sipxivr/EmailFormats.properties
 #python scripts
 mkdir -p /usr/voicemailtranscription/voicemail
 mkdir -p /usr/voicemailtranscription/credentials
+mkdir -p /usr/voicemailtranscription/go
+cp go/transcription /usr/voicemailtranscription/go/transcription
 cp vrmilter.py /usr/voicemailtranscription/vrmilter.py
 cp libmilter.py /usr/voicemailtranscription/libmilter.py
 export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json

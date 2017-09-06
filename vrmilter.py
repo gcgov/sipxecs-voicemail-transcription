@@ -6,7 +6,6 @@
 
 # Standard library.
 import base64
-from contextlib import contextmanager
 import os
 import os.path
 import io
@@ -14,16 +13,19 @@ import subprocess
 import sys
 import tempfile
 import time
-import wave
 import string
 import random
 import signal
 import traceback
+
 import libmilter as lm
+
+from contextlib import contextmanager
 from textwrap import dedent
 
-# Imports the Google Cloud client library
 from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
 
 #=======================================================================
 # Global settings
@@ -34,43 +36,73 @@ GLV_TMP_PATH_TO_SAVE_VOICEMAIL = '/usr/voicemailtranscription/voicemail/'
 #=======================================================================
 # Recognizer
 #=======================================================================
+def glog(msg):
+    t = time.strftime('%H:%M:%S')
+    print('[%s] %s' % (t, msg))
+    sys.stdout.flush()
+        
 def decode_speech(wav_file):
-    """Provide a file path and name to a wav file to transcribe. Transcription returned as string
-    """
-    result = ''
-    print('open ' + wav_file)
-    audio = wave.open(wav_file)
-    samplerate = audio.getframerate()
-
-    print('sample rate ' + str(samplerate))
+    result = "No transcription available"
 
     try:
-        # Instantiates a client
-        speech_client = speech.Client()
-        # The name of the audio file to transcribe
-        #transcriptionPath = 'C:/inetpub/git/sipxecs-voicemail-translation/transcription/'
-        #audioPath = 'C:/inetpub/git/sipxecs-voicemail-translation/voicemail/'
-        #audioFileName = 'test.wav'
-        file_name = wav_file
-        # Loads the audio into memory
-        with io.open(file_name, 'rb') as audio_file:
-            content = audio_file.read()
-            audio_sample = speech_client.sample(
-                content,
-                source_uri=None,
-                encoding='LINEAR16',
-				languageCode='en-US',
-                sample_rate=samplerate)
-        # Detects speech in the audio file
-        alternatives = speech_client.speech_api.sync_recognize(audio_sample)
-        for alternative in alternatives:
-            print(alternative.transcript)
-            result = result + format(alternative.transcript)
-        return result
-    finally:
-        result = 'No transcription available for this message'
+        result = subprocess.check_output(['/usr/voicemailtranscription/go/./transcription', wav_file], encoding='utf-8')
+    except Exception as e:
+        result = "Transcription failed"
 
-    os.remove(wav_file)
+    print(result)
+    # result = ''
+    # glog('open ' + wav_file)
+    # #audio = wave.open(wav_file)
+    # #samplerate = audio.getframerate()
+
+    # #glog('sample rate ' + str(samplerate))
+
+    # if os.path.isfile(wav_file):
+    #     glog('wav file exists')
+
+    # try:
+    #     glog('try speech api')
+        
+    #     # Instantiates a client
+    #     client = speech.SpeechClient()
+        
+    #     # The name of the audio file to transcribe
+    #     # file_name = '/usr/voicemailtranscription/voicemail/6FWSVU8D24KJPNHYDW4X.wav'
+    #     file_name = wav_file;
+        
+    #     # Loads the audio into memory
+    #     with io.open(file_name, 'rb') as audio_file:
+    #         content = audio_file.read()
+    #         audio = types.RecognitionAudio(content=content)
+    
+    #     glog('audio defined')
+        
+    #     config = types.RecognitionConfig(
+    #         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+    #         #sample_rate_hertz=samplerate,
+    #         language_code='en-US'
+    #     )
+
+    #     glog('trying recognize request')
+
+    #     response = client.recognize(config, audio)
+
+    #     glog('we have response')
+
+    #     alternatives = response.results[0].alternatives
+
+    #     for alternative in alternatives:
+    #         result = format(alternative.transcript)
+    #         glog('Transcript: {}'.format(alternative.transcript))
+
+    #     glog(result)
+    # except Exception as e:
+    #     glog('EXCEPTION OCCURED in recognize request: ' + str(e))
+    # finally:
+    #     glog('failed speech api')
+    #     result = 'No transcription available for this message'
+
+    # os.remove(wav_file)
 
     return result
 
@@ -99,7 +131,7 @@ def fn_run_milter():
         f.run()
     except Exception as e:
         f.close()
-        print('EXCEPTION OCCURED: ' + str(e))
+        glog('EXCEPTION OCCURED: ' + str(e))
         sys.exit(3)
 
 
@@ -132,7 +164,7 @@ def get_content_type(piece):
     """Provide a body piece (as provided by split_body_pieces) and get the content type header"""
     for line in piece.split("\n"):
         if line.startswith("Content-Type: "):
-            print(line)
+            glog(line)
             return line[len("Content-Type: "):].strip()
     return "Unknown"
 
@@ -146,7 +178,7 @@ def fn_extract_wav(piece):
     """Save the base64 encoded wav data in this email piece and
         return the file path and name as a string
     """
-    print('Extracting wav from piece')
+    glog('Extracting wav from piece')
 
     # parse this piece of the email text to merge the
     #  base64 encoded string into one line and then
@@ -169,8 +201,8 @@ def fn_extract_wav(piece):
     if not os.path.exists(GLV_TMP_PATH_TO_SAVE_VOICEMAIL):
         os.makedirs(GLV_TMP_PATH_TO_SAVE_VOICEMAIL)
 
-    print("save wav file")
     rs_path = GLV_TMP_PATH_TO_SAVE_VOICEMAIL + rs_string + '.wav'
+    glog("save wav file to " + rs_path)
     with open(rs_path, 'wb') as f:
         f.write(data)
 
@@ -288,8 +320,9 @@ class VRMilter(lm.ForkMixin, lm.MilterProtocol):
                             wav_file = fn_extract_wav(piece)
                             resampled_file = wav_file
                             try:
-                                self.log("decode speech")
+                                self.log("decode speech on "+resampled_file)
                                 vr_text = decode_speech(resampled_file)
+                                self.log("finished speech decoding on "+resampled_file)
                             except Exception as ex:
                                 self.log("decode speech failed")
                                 self.log(str(ex))
