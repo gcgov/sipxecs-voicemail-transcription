@@ -9,7 +9,7 @@ import (
 	"os"
 
 	// Imports the Google Cloud Speech API client package.
-	"golang.org/x/net/context"
+	"context"
 
 	speech "cloud.google.com/go/speech/apiv1"
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// Reads the audio file into memory.
-	data, err := ioutil.ReadFile(filename)
+	/*data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)
 	}
@@ -58,6 +58,10 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("failed to recognize: %v", err)
+	}*/
+	resp, err := send(client, filename)
+	if err != nil {
+		log.Fatalf("failed to transcribe: %v", err)
 	}
 
 	// Prints the results.
@@ -67,4 +71,31 @@ func main() {
 			fmt.Printf("%v", alt.Transcript)
 		}
 	}
+}
+
+func send(client *speech.Client, filename string) (*speechpb.LongRunningRecognizeResponse, error) {
+	ctx := context.Background()
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the contents of the audio file with the encoding and
+	// and sample rate information to be transcripted.
+	req := &speechpb.LongRunningRecognizeRequest{
+		Config: &speechpb.RecognitionConfig{
+			Encoding:        speechpb.RecognitionConfig_LINEAR16,
+			SampleRateHertz: 16000,
+			LanguageCode:    "en-US",
+		},
+		Audio: &speechpb.RecognitionAudio{
+			AudioSource: &speechpb.RecognitionAudio_Content{Content: data},
+		},
+	}
+
+	op, err := client.LongRunningRecognize(ctx, req)
+	if err != nil {
+		log.Fatalf("failed to iniate long running transcription client: %v", err)
+	}
+	return op.Wait(ctx)
 }
