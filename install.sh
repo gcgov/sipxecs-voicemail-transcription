@@ -1,4 +1,6 @@
 #!/bin/bash
+read -p 'Google Cloud Platform Project Id: ' projectvar
+read -p 'Google Cloud Storage Bucket Id: ' bucketvar
 
 #install python
 # Compilers and related tools:
@@ -28,10 +30,8 @@ cp go/transcription /usr/voicemailtranscription/go/transcription
 cp vrmilter.py /usr/voicemailtranscription/vrmilter.py
 cp libmilter.py /usr/voicemailtranscription/libmilter.py
 export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json
-
-#google cloud
-pip3.6 install --upgrade google-api-python-client
-pip3.6 install --upgrade google-cloud-speech
+export GOOGLE_CLOUD_PROJECT=$projectvar
+echo $bucketvar > /usr/voicemailtranscription/credentials/cloudstoragebucket.txt
 
 #append to sendmail
 echo "dnl #Mail filter" >> /etc/mail/sendmail.mc
