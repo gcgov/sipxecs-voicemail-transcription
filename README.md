@@ -20,14 +20,14 @@ This project extends sipxcom voicemail email notifications to include a voice to
 	 `/usr/voicemailtranscription/voicemail`
 	 `/usr/voicemailtranscription/credentials`
 
- 3. Create a Google Cloud Console Project (copy the project id, you will need to create )
- 	 3.1 Enable Google Cloud Speech API
- 	 	1. In the cloud console, generate the app credentials JSON file. Save the json credentials as `/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
-	 	2. On your server, Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
-	 3.2 Enable Google Cloud Storage
-		1. In the cloud console, create a storage bucket in GCS
-		2. On your server, create a text file named `/usr/voicemailtranscription/credentials/cloudstoragebucket.txt`. Enter the name of the bucket as the only contents of the file. Do not include any whitespace or blank lines.
-	 	3. On your server, Set Environment variable `GOOGLE_CLOUD_PROJECT = {project_id}` replace `{project_id}` with your project's id
+ 3. Create a Google Cloud Console Project
+	 1. Enable Google Cloud Speech API
+	 	 1. In the cloud console, generate the app credentials JSON file. Save the json credentials as `/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
+	 	 2. On your server, Set Environment variable `GOOGLE_APPLICATION_CREDENTIALS = ./credentials/SipxecsVoicemailtoText.json` CentOS6: Run command: `export GOOGLE_APPLICATION_CREDENTIALS=/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
+	 2. Enable Google Cloud Storage
+	 	 1. In the cloud console, create a storage bucket in GCS
+	 	 2. On your server, create a text file named `/usr/voicemailtranscription/credentials/cloudstoragebucket.txt`. Enter the name of the bucket as the only contents of the file. Do not include any whitespace or blank lines.
+	 	 3. On your server, Set Environment variable `GOOGLE_CLOUD_PROJECT = {project_id}` (replace `{project_id}` with your project's id)
 
  4. Modify SendMail configuration
 	 1. Append the following lines to */etc/mail/sendmail.mc*
