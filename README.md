@@ -2,7 +2,7 @@
 
 Install this on your Ezuce unitme server to add voicemail transcriptions to voicemail emails utilizing Google's Cloud Speech-to-Text API.
 
-![Alt text](/screenshot/sample.png?raw=true "Voicemail email with transcription")
+![Alt text](screenshot/sample.PNG?raw=true "Voicemail email with transcription")
 
  - Requirements:
 	 - Python3
