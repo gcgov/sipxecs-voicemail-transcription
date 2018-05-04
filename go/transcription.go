@@ -54,14 +54,14 @@ func main() {
 		log.Printf("using google cloud storage for %v because it is %v seconds", filename, dur.Seconds())
 
 		//get the GCS bucket id
-		b, err := ioutil.ReadFile("../credentials/cloudstoragebucket.txt")
+		b, err := ioutil.ReadFile("/usr/voicemailtranscription/credentials/cloudstoragebucket.txt")
 		if err != nil {
 			log.Fatalf("Cloud storage bucket for use must be defined in credentials/cloudstoragebucket.txt: %v", err)
 		}
 		gcsBucketName := string(b)
 		gcspath := "gs://" + gcsBucketName + "/" + filename
 
-		cloudstorage("ezuce-transcription-voicemail", path, filename, "write")
+		cloudstorage(gcsBucketName, path, filename, "write")
 		pathToUse = gcspath
 		sendFunc = sendGCS
 	} else {
@@ -78,7 +78,9 @@ func main() {
 	//run transcription
 	resp, err := sendFunc(client, pathToUse)
 	if err != nil {
-		deleteGCSVM(path, filename)
+		if dur.Seconds() > 60 {
+			deleteGCSVM(path, filename)
+		}
 		log.Fatalf("failed to transcribe: %v", err)
 		return
 	}
@@ -90,7 +92,9 @@ func main() {
 			fmt.Printf("%v", alt.Transcript)
 		}
 	}
-	deleteGCSVM(path, filename)
+	if dur.Seconds() > 60 {
+		deleteGCSVM(path, filename)
+	}
 }
 
 func deleteGCSVM(path string, filename string) {
@@ -109,9 +113,9 @@ func send(client *speech.Client, filename string) (*speechpb.LongRunningRecogniz
 	// and sample rate information to be transcripted.
 	req := &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:        speechpb.RecognitionConfig_LINEAR16,
-			SampleRateHertz: 16000,
-			LanguageCode:    "en-US",
+			Encoding: speechpb.RecognitionConfig_LINEAR16,
+			//SampleRateHertz: 16000,
+			LanguageCode: "en-US",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Content{Content: data},
@@ -132,9 +136,9 @@ func sendGCS(client *speech.Client, gcsURI string) (*speechpb.LongRunningRecogni
 	// and sample rate information to be transcripted.
 	req := &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:        speechpb.RecognitionConfig_LINEAR16,
-			SampleRateHertz: 16000,
-			LanguageCode:    "en-US",
+			Encoding: speechpb.RecognitionConfig_LINEAR16,
+			//SampleRateHertz: 16000,
+			LanguageCode: "en-US",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Uri{Uri: gcsURI},
