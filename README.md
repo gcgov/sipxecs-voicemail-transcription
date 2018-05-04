@@ -1,9 +1,11 @@
 # sipxecs-voicemail-transcription
 
-This project extends sipxcom voicemail email notifications to include a voice to text transcription. Requirements:
-- sipxcom
-- Python3
-- Google Cloud Project
+Install this on your Ezuce unitme server to add voicemail transcriptions to voicemail emails utilizing Google's Cloud Speech-to-Text API.
+
+-Requirements:
+  - sipxcom
+  - Python3
+  - Google Cloud Project
  	 - Project needs access to the Google Cloud Storage API (https://cloud.google.com/storage/) and the Google Cloud Speech API (https://cloud.google.com/speech/)
  	 - In the Google Cloud Console, create and download Application Service Credentials as a JSON file
 
