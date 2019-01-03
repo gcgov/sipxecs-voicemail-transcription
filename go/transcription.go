@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/go-audio/wav"
 
@@ -36,18 +38,7 @@ func main() {
 		return
 	}
 
-	//get duration of wav file
-	f, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	defer f.Close()
-	dur, err := wav.NewDecoder(f).Duration()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	dur := duration(path)
 
 	//determine which transcription method to use
 	if dur.Seconds() > 60 {
@@ -55,6 +46,7 @@ func main() {
 
 		//get the GCS bucket id
 		b, err := ioutil.ReadFile("/usr/voicemailtranscription/credentials/cloudstoragebucket.txt")
+		//b, err := ioutil.ReadFile("../credentials/cloudstoragebucket.txt")
 		if err != nil {
 			log.Fatalf("Cloud storage bucket for use must be defined in credentials/cloudstoragebucket.txt: %v", err)
 		}
@@ -64,9 +56,12 @@ func main() {
 		cloudstorage(gcsBucketName, path, filename, "write")
 		pathToUse = gcspath
 		sendFunc = sendGCS
-	} else {
+	} else if dur.Seconds() > 3 {
 		log.Printf("just posting audio file in transcription request for %v because it is %v seconds", filename, dur.Seconds())
 		sendFunc = send
+	} else {
+		log.Printf("not transcribing %v because it is only %v seconds", filename, dur.Seconds())
+		return
 	}
 
 	// Creates a speech client.
@@ -81,6 +76,7 @@ func main() {
 		if dur.Seconds() > 60 {
 			deleteGCSVM(path, filename)
 		}
+		log.Print(resp)
 		log.Fatalf("failed to transcribe: %v", err)
 		return
 	}
@@ -95,6 +91,36 @@ func main() {
 	if dur.Seconds() > 60 {
 		deleteGCSVM(path, filename)
 	}
+}
+
+func duration(path string) time.Duration {
+
+	zeroDuration := time.Duration(0)
+	extension := string(path[(len(path) - 3):len(path)])
+
+	//get duration of wav file
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+		return zeroDuration
+	}
+
+	if strings.ToLower(extension) == "wav" {
+
+		dur, err := wav.NewDecoder(f).Duration()
+		if err != nil {
+			log.Fatal(err)
+			return zeroDuration
+		}
+
+		return dur
+	} else if strings.ToLower(extension) == "mp3" {
+		log.Fatal("we cannot transcribe mp3 - convert to wav first")
+		return zeroDuration
+
+	}
+
+	return zeroDuration
 }
 
 func deleteGCSVM(path string, filename string) {
@@ -113,8 +139,8 @@ func send(client *speech.Client, filename string) (*speechpb.LongRunningRecogniz
 	// and sample rate information to be transcripted.
 	req := &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding: speechpb.RecognitionConfig_LINEAR16,
-			//SampleRateHertz: 16000,
+			//Encoding:        speechpb.RecognitionConfig_LINEAR16,
+			//SampleRateHertz: 44100,
 			LanguageCode: "en-US",
 		},
 		Audio: &speechpb.RecognitionAudio{
@@ -136,8 +162,8 @@ func sendGCS(client *speech.Client, gcsURI string) (*speechpb.LongRunningRecogni
 	// and sample rate information to be transcripted.
 	req := &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding: speechpb.RecognitionConfig_LINEAR16,
-			//SampleRateHertz: 16000,
+			//Encoding:        speechpb.RecognitionConfig_LINEAR16,
+			//SampleRateHertz: 44100,
 			LanguageCode: "en-US",
 		},
 		Audio: &speechpb.RecognitionAudio{

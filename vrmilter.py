@@ -27,6 +27,8 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
+from pydub import AudioSegment
+
 #=======================================================================
 # Global settings
 #=======================================================================
@@ -41,68 +43,15 @@ def glog(msg):
     print('[%s] %s' % (t, msg))
     sys.stdout.flush()
         
-def decode_speech(wav_file):
+def decode_speech(file_name):
     result = "No transcription available"
 
     try:
-        result = subprocess.check_output(['/usr/voicemailtranscription/go/./transcription', wav_file], encoding='utf-8')
+        result = subprocess.check_output(['/usr/voicemailtranscription/go/./transcription', file_name], encoding='utf-8')
     except Exception as e:
         result = "Transcription failed"
 
     print(result)
-    # result = ''
-    # glog('open ' + wav_file)
-    # #audio = wave.open(wav_file)
-    # #samplerate = audio.getframerate()
-
-    # #glog('sample rate ' + str(samplerate))
-
-    # if os.path.isfile(wav_file):
-    #     glog('wav file exists')
-
-    # try:
-    #     glog('try speech api')
-        
-    #     # Instantiates a client
-    #     client = speech.SpeechClient()
-        
-    #     # The name of the audio file to transcribe
-    #     # file_name = '/usr/voicemailtranscription/voicemail/6FWSVU8D24KJPNHYDW4X.wav'
-    #     file_name = wav_file;
-        
-    #     # Loads the audio into memory
-    #     with io.open(file_name, 'rb') as audio_file:
-    #         content = audio_file.read()
-    #         audio = types.RecognitionAudio(content=content)
-    
-    #     glog('audio defined')
-        
-    #     config = types.RecognitionConfig(
-    #         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-    #         #sample_rate_hertz=samplerate,
-    #         language_code='en-US'
-    #     )
-
-    #     glog('trying recognize request')
-
-    #     response = client.recognize(config, audio)
-
-    #     glog('we have response')
-
-    #     alternatives = response.results[0].alternatives
-
-    #     for alternative in alternatives:
-    #         result = format(alternative.transcript)
-    #         glog('Transcript: {}'.format(alternative.transcript))
-
-    #     glog(result)
-    # except Exception as e:
-    #     glog('EXCEPTION OCCURED in recognize request: ' + str(e))
-    # finally:
-    #     glog('failed speech api')
-    #     result = 'No transcription available for this message'
-
-    # os.remove(wav_file)
 
     return result
 
@@ -210,6 +159,52 @@ def fn_extract_wav(piece):
     return rs_path
 
 
+def fn_extract_mp3(piece):
+    """Save the base64 encoded wav data in this email piece and
+        return the file path and name as a string
+    """
+    glog('Extracting wav from piece')
+
+    # parse this piece of the email text to merge the
+    #  base64 encoded string into one line and then
+    #  decode the string into binary data
+    capture = False
+    lines = []
+    index = 0
+    for line in piece.split('\n'):
+        if line.strip() == "":
+            capture = True
+        if capture == True:
+            lines.append(line.strip())
+            index = index + 1
+
+    b64_data = ''.join(lines)
+    data = base64.b64decode(b64_data)
+
+    rs_string = random_string(20)
+
+    if not os.path.exists(GLV_TMP_PATH_TO_SAVE_VOICEMAIL):
+        os.makedirs(GLV_TMP_PATH_TO_SAVE_VOICEMAIL)
+
+    rs_path = GLV_TMP_PATH_TO_SAVE_VOICEMAIL + rs_string + '.mp3'
+    glog("save mp3 file to " + rs_path)
+    with open(rs_path, 'wb') as f:
+        f.write(data)
+
+    wav_path = GLV_TMP_PATH_TO_SAVE_VOICEMAIL + rs_string + '.wav'
+    sound = AudioSegment.from_mp3(rs_path)
+    sound.export(wav_path, format="wav")
+
+    #delete the mp3
+    try:
+        os.unlink(rs_path)
+    except:
+        pass         
+
+    # return temporary file path and name for wav
+    return wav_path
+
+
 def exec_cmd(cmd, **kwds):
     """
     Execute arbitrary commands as sub-processes.
@@ -305,50 +300,59 @@ class VRMilter(lm.ForkMixin, lm.MilterProtocol):
                 body = ''.join(self.body_parts)
                 self.log("body size: " + str(len(body)))
                 new_pieces = []
-                self.log("Searching for WAV ...")
+                
+                
+                audio_file_name = None
                 vr_text = None
 
+                #find wav or mp3 in body
+                self.log("Searching for WAV or MP3 ...")
                 for __n, piece in enumerate(split_body_pieces(body)):
                     self.log("Processing piece #" + str(__n))
                     ct = get_content_type(piece)
                     self.log("Content-type: " + ct)
+
+                    #wav
                     if ct.startswith("audio/x-wav"):
                         self.log("Extracting WAV ...")
-                        wav_file = None
-                        resampled_file = None
                         try:
-                            wav_file = fn_extract_wav(piece)
-                            resampled_file = wav_file
-                            try:
-                                self.log("decode speech on "+resampled_file)
-                                vr_text = decode_speech(resampled_file)
-                                self.log("finished speech decoding on "+resampled_file)
-                            except Exception as ex:
-                                self.log("decode speech failed")
-                                self.log(str(ex))
-                            # else:
-                            #    self.log("Error executing command: %s" % str(cmd))
-                        finally:
-                            if wav_file is not None:
-                                try:
-                                    os.unlink(wav_file)
-                                except:
-                                    pass
-                            if resampled_file is not None:
-                                try:
-                                    os.unlink(resampled_file)
-                                except:
-                                    pass
+                            audio_file_name = fn_extract_wav(piece)
+                        except: 
+                            pass    
 
+                    #mp3
+                    if ct.startswith("audio/mpeg") or  ct.startswith("audio/x-mpeg-3"):
+                        self.log("Extracting MP3 ...")
+                        try:
+                            audio_file_name = fn_extract_mp3(piece)
+                        except: 
+                            pass   
+
+
+                #if audio was found, transcribe it and then delete the file
+                if audio_file_name is not None:
+                    try:
+                        self.log("decode speech on "+audio_file_name)
+                        vr_text = decode_speech(audio_file_name)
+                        self.log("finished speech decoding on "+audio_file_name)
+                    except Exception as ex:
+                        self.log("decode speech failed")
+                        self.log(str(ex))
+
+                    #delete the wav or mp3 file we created if it was created
+                    try:
+                        os.unlink(audio_file_name)
+                    except:
+                        pass         
+
+                #append content to email body
                 self.log("Assembling message ...")
                 for __n, piece in enumerate(split_body_pieces(body)):
                     self.log("Processing piece #" + str(__n))
                     new_piece = str(piece)
                     ct = get_content_type(piece)
                     self.log("Content-type: " + ct)
-                    if ct.startswith("audio/x-wav"):
-                        self.log("This is the WAV part!")
-                    elif ct.startswith("text/html"):
+                    if ct.startswith("text/html"):
                         if vr_text is not None:
                             vr_html = '<p style="font-family:Helvetica,Arial,sans-serif;color:#000000;font-size:16px;margin:0;">Transcription: ' + vr_text + '</p>'
                             new_piece = new_piece.replace(
@@ -361,6 +365,7 @@ class VRMilter(lm.ForkMixin, lm.MilterProtocol):
 
             except Exception as ex:
                 self.log(str(ex))
+
             self.replBody(newbody.encode())
         return lm.CONTINUE
 
