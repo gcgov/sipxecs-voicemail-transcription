@@ -54,3 +54,8 @@ Follow instructions 1-6 of the manual install. Run command: `python3 vrmilter.py
 
 ## Logging
 All output of the voicemailtranscription service is logged to `/var/log/voicemailtranscription.log`. Once you have the milter running as a service, to verify the service is working or to watch for any errors, `tail -f /var/log/voicemailtranscription.log`
+
+## Manage Service
+To start service: `service voicemailtranscription start`
+To stop service: `service voicemailstranscription stop`
+To restart service: `service voicemailstranscription restart`
