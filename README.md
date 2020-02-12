@@ -15,8 +15,8 @@ Install this on your Ezuce unitme server to add voicemail transcriptions to voic
  2. cd into that directory and run install.sh
  3. Save Google Cloud Application Credentials JSON file as `/usr/voicemailtranscription/credentials/SipxecsVoicemailtoText.json`
 
-## Manual Install for CentOS 6
- 1. Install Python3 and pip3
+## Manual Install for CentOS 7
+ 1. Install Python3 by running command `sudo yum install python3`
  
  2. Install google speech libraries for Python3 `pip3 install google-cloud-speech`
 
@@ -44,10 +44,10 @@ Install this on your Ezuce unitme server to add voicemail transcriptions to voic
 	2. Run command `chkconfig voicemailtranscription on` to make the transcription service start on bootup
 
 
-## Logging
-All output of the voicemailtranscription service is logged to `/var/log/voicemailtranscription.log`. Once you have the milter running as a service, to verify the service is working or to watch for any errors, `tail -f /var/log/voicemailtranscription.log`
-
 ## Manage Service
 To start service: `service voicemailtranscription start`
 To stop service: `service voicemailstranscription stop`
 To restart service: `service voicemailstranscription restart`
+
+## Logging
+All output of the voicemailtranscription service is logged to `/var/log/voicemailtranscription.log`. Once you have the milter running as a service, to verify the service is working or to watch for any errors, `tail -f /var/log/voicemailtranscription.log`
